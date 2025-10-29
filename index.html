@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rizz Assist</title>
+<style>
+  :root{
+    --bg:#0f1724; --card:#111827; --accent:#6ee7b7; --muted:#9aa4b2;
+    --glass: rgba(255,255,255,0.03);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:linear-gradient(180deg,#071029 0%, #0b1220 100%);
+    color:#e6eef6;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+  .wrap{
+    width:100%;
+    max-width:720px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:14px;
+    padding:22px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  header{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .logo{
+    width:56px; height:56px; border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),#5eead4);
+    display:flex; align-items:center; justify-content:center;
+    color:#042024; font-weight:700; font-size:18px;
+  }
+  h1{margin:0; font-size:18px}
+  p.lead{margin:0; color:var(--muted); font-size:13px}
+  .controls{
+    display:flex;
+    gap:8px;
+    margin:18px 0;
+    flex-wrap:wrap;
+  }
+  .btn, select{
+    background:var(--glass);
+    border:1px solid rgba(255,255,255,0.04);
+    color:inherit;
+    padding:10px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:14px;
+  }
+  .btn.primary{
+    background:linear-gradient(90deg,var(--accent),#34d399);
+    color:#042024; font-weight:600;
+    border:none;
+  }
+  .output{
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015));
+    border-radius:12px;
+    padding:18px;
+    min-height:120px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    justify-content:center;
+    position:relative;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .line{
+    font-size:20px;
+    line-height:1.2;
+    margin:0;
+    word-break:break-word;
+  }
+  .meta{display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:8px}
+  .muted{color:var(--muted); font-size:13px}
+  .copy-btn{background:transparent; border:1px dashed rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px; cursor:pointer}
+  .footer{margin-top:14px; display:flex; gap:8px; align-items:center; justify-content:flex-end}
+  @media (max-width:540px){
+    .line{font-size:18px}
+    .controls{gap:6px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="Rizz Assist">
+    <header>
+      <div class="logo">RZ</div>
+      <div>
+        <h1>Rizz Assist</h1>
+        <p class="lead">Respectful lines. Use with consent and good judgment.</p>
+      </div>
+    </header>
+
+    <div class="controls" aria-hidden="false">
+      <select id="category" aria-label="Select category">
+        <option value="all">All styles</option>
+        <option value="playful">Playful</option>
+        <option value="genuine">Genuine</option>
+        <option value="funny">Funny</option>
+        <option value="compliment">Compliment</option>
+        <option value="subtle">Subtle</option>
+      </select>
+
+      <button id="random" class="btn primary" title="Get random line">Random</button>
+      <button id="next" class="btn" title="Next line">Next</button>
+      <button id="prev" class="btn" title="Previous line">Prev</button>
+
+      <div style="flex:1"></div>
+
+      <button id="copy" class="copy-btn" title="Copy line">Copy</button>
+    </div>
+
+    <div class="output" id="output" role="status" aria-live="polite">
+      <p class="line" id="line">Press Random to get a line.</p>
+      <div class="meta">
+        <div class="muted" id="catLabel">Category: —</div>
+        <div class="muted" id="indexLabel">0 / 0</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="muted">Saved locally. No network.</div>
+    </div>
+  </div>
+
+<script>
+  // respectful lines only. Use responsibly.
+  const LINES = [
+    {cat:'genuine', text:"Hey, I like your energy. Want to grab coffee and keep talking?"},
+    {cat:'playful', text:"Do you have a map? I just got lost in your smile."},
+    {cat:'funny', text:"If you were a song, I'd put you on repeat."},
+    {cat:'compliment', text:"You make even ordinary moments feel brighter."},
+    {cat:'subtle', text:"I appreciate how you see things. Mind if I learn more?"},
+    {cat:'genuine', text:"I value honesty. I'd rather be real and a little awkward than fake and polished."},
+    {cat:'playful', text:"I collect good conversations. You in?"},
+    {cat:'funny', text:"Warning: talking to me may cause excessive smiling."},
+    {cat:'compliment', text:"That color looks great on you."},
+    {cat:'subtle', text:"Would you like to continue this conversation sometime?"},
+
+    {cat:'playful', text:"Are you made of copper and tellurium? Because you're Cu-Te."},
+    {cat:'genuine', text:"I noticed you from across the room and wanted to say hi."},
+    {cat:'funny', text:"Do you believe in fate? Or should I walk by again?"},
+    {cat:'compliment', text:"You have a great laugh. It's contagious."},
+    {cat:'subtle', text:"This has been fun. If you’re free later I'd like to continue."},
+    {cat:'genuine', text:"I respect how thoughtful you are. That matters to me."},
+    {cat:'playful', text:"If smiles were currency I'd be rich right now."},
+    {cat:'funny', text:"I was going to open with something smooth but I'd rather be honest: hi."},
+    {cat:'compliment', text:"You're easy to talk to. I appreciate that."},
+    {cat:'subtle', text:"No pressure. If you want to hang out sometime, say the word."}
+  ];
+
+  let filtered = [...LINES];
+  let index = 0;
+
+  const lineEl = document.getElementById('line');
+  const catLabel = document.getElementById('catLabel');
+  const indexLabel = document.getElementById('indexLabel');
+  const category = document.getElementById('category');
+  const randomBtn = document.getElementById('random');
+  const nextBtn = document.getElementById('next');
+  const prevBtn = document.getElementById('prev');
+  const copyBtn = document.getElementById('copy');
+
+  function render(){
+    if(filtered.length === 0){
+      lineEl.textContent = "No lines for this category.";
+      catLabel.textContent = "Category: none";
+      indexLabel.textContent = "0 / 0";
+      return;
+    }
+    const item = filtered[index];
+    lineEl.textContent = item.text;
+    catLabel.textContent = "Category: " + item.cat;
+    indexLabel.textContent = (index+1) + " / " + filtered.length;
+  }
+
+  function applyFilter(){
+    const c = category.value;
+    if(c === 'all') filtered = [...LINES];
+    else filtered = LINES.filter(l => l.cat === c);
+    index = 0;
+    render();
+  }
+
+  randomBtn.addEventListener('click', ()=> {
+    applyFilter(); // ensure filter is active
+    if(filtered.length === 0) return;
+    index = Math.floor(Math.random() * filtered.length);
+    render();
+  });
+
+  nextBtn.addEventListener('click', ()=> {
+    if(filtered.length === 0) return;
+    index = (index + 1) % filtered.length;
+    render();
+  });
+
+  prevBtn.addEventListener('click', ()=> {
+    if(filtered.length === 0) return;
+    index = (index - 1 + filtered.length) % filtered.length;
+    render();
+  });
+
+  category.addEventListener('change', ()=> {
+    applyFilter();
+  });
+
+  copyBtn.addEventListener('click', async ()=>{
+    const text = lineEl.textContent;
+    try{
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = "Copied";
+      setTimeout(()=> copyBtn.textContent = "Copy", 1000);
+    }catch(e){
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand('copy'); copyBtn.textContent = "Copied"; }
+      catch(err){ alert('Copy failed. Select text manually.'); }
+      ta.remove();
+      setTimeout(()=> copyBtn.textContent = "Copy", 1000);
+    }
+  });
+
+  // initial
+  applyFilter();
+</script>
+</body>
+</html>
